@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1014373387149",
+    "project_id": "thaijourney-4881b",
+    "storage_bucket": "thaijourney-4881b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1014373387149:android:22b77705752cd527360bc4",
+        "android_client_info": {
+          "package_name": "thaijourney.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCa039RiwtNgpO6mTJfUtEA9pbw3E7xt8M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
