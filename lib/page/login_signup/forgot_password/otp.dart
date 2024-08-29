@@ -1,11 +1,9 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:thaijourney/constant/constant.dart';
 import 'package:thaijourney/constant/themeprovider.dart';
-import 'package:thaijourney/page/login_signup/forgot_password/3_change_password.dart';
+import 'package:thaijourney/page/login_signup/forgot_password/chang_password.dart';
 import 'package:thaijourney/util/transition_route.dart';
 
 class OtpPage extends StatefulWidget {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // Thai month names
 const List<String> thaiMonthNames = [
@@ -24,11 +23,11 @@ class CustomHeader extends StatelessWidget {
   final bool isThaiLocale;
 
   const CustomHeader({
-    Key? key,
+    super.key,
     required this.focusedMonth,
     required this.onPageChanged,
     required this.isThaiLocale,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

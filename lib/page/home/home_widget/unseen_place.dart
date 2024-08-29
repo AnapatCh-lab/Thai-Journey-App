@@ -7,19 +7,19 @@ import 'package:shimmer/shimmer.dart';
 import 'package:expandable_text/expandable_text.dart';
 import '../../../constant/constant.dart';
 
-class PlaceSlide extends StatefulWidget {
-  const PlaceSlide({super.key});
+class UnseenPlace extends StatefulWidget {
+  const UnseenPlace({super.key});
 
   @override
-  State<PlaceSlide> createState() => _PlaceSlideState();
+  State<UnseenPlace> createState() => _UnseenPlaceState();
 }
 
-class _PlaceSlideState extends State<PlaceSlide> {
+class _UnseenPlaceState extends State<UnseenPlace> {
   Stream? slides;
 
-  Stream? _queryPlace() {
+  Stream? _queryUnseen() {
     slides = FirebaseFirestore.instance
-        .collection('places')
+        .collection('unseen')
         .limit(4)
         .snapshots()
         .map((list) => list.docs.map((doc) => doc.data()));
@@ -30,7 +30,7 @@ class _PlaceSlideState extends State<PlaceSlide> {
 
   @override
   void initState() {
-    _queryPlace();
+    _queryUnseen();
     super.initState();
   }
 
@@ -40,7 +40,7 @@ class _PlaceSlideState extends State<PlaceSlide> {
     return Scaffold(
         appBar: AppBar(
           title: Text(
-            AppLocalizations.of(context)!.rec_place,
+            AppLocalizations.of(context)!.unseen,
             style: TextStyle(
               fontSize: SizeConfig.height(2.5),
               fontWeight: FontWeight.w600,
@@ -102,7 +102,7 @@ buildCarouselItem(Map data, BuildContext context) {
                     children: [
                       ClipRRect(
                         borderRadius:
-                        BorderRadius.circular(SizeConfig.height(2)),
+                            BorderRadius.circular(SizeConfig.height(2)),
                         child: FastCachedImage(
                           url: data['imageUrl'],
                           fit: BoxFit.cover,

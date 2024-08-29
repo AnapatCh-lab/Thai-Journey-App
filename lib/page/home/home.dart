@@ -8,7 +8,7 @@ import 'package:thaijourney/constant/constant.dart';
 import 'package:thaijourney/constant/themeprovider.dart';
 import 'package:thaijourney/page/home/sub_page/hotel.dart';
 import 'package:thaijourney/util/bottom_bar.dart';
-import 'package:thaijourney/firebase_storage_service.dart';
+import 'package:thaijourney/core/firebase_storage_service.dart';
 import 'package:thaijourney/util/transition_route.dart';
 import '../account/account.dart';
 import '../map/map.dart';
@@ -62,7 +62,7 @@ class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
   @override
-  _HomeContentState createState() => _HomeContentState();
+  State<HomeContent> createState() => _HomeContentState();
 }
 
 class _HomeContentState extends State<HomeContent> {

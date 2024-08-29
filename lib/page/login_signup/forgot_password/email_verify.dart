@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:thaijourney/constant/constant.dart';
 import 'package:thaijourney/constant/themeprovider.dart';
 import 'package:thaijourney/util/transition_route.dart';
-import '2_otp.dart';
+import 'otp.dart';
 
 class CheckEmailPage extends StatelessWidget {
   const CheckEmailPage({super.key});

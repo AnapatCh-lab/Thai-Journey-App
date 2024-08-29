@@ -2,8 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:thaijourney/firebase_storage_service.dart';
-
+import 'package:thaijourney/core/firebase_storage_service.dart';
 import '../page/home/home.dart';
 import '../page/login_signup/login_signup.dart';
 import 'transition_route.dart';
@@ -54,7 +53,7 @@ class FirstUse extends StatefulWidget {
   const FirstUse({super.key});
 
   @override
-  _FirstUseState createState() => _FirstUseState();
+  State<FirstUse> createState() => _FirstUseState();
 }
 
 class _FirstUseState extends State<FirstUse> {

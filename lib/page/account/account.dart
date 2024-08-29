@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,11 +9,30 @@ import 'package:thaijourney/constant/constant.dart';
 import 'package:thaijourney/constant/themeprovider.dart';
 import 'package:thaijourney/page/account/sub_page/account_appearance.dart';
 import 'package:thaijourney/page/account/sub_page/account_privacy.dart';
-import 'package:thaijourney/page/login_signup/login_signup.dart';
 import 'package:thaijourney/util/transition_route.dart';
 
-class AccountPage extends StatelessWidget {
+import 'logout/logout_sesssions.dart';
+
+class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
+
+  @override
+  State<AccountPage> createState() => _AccountPageState();
+}
+
+class _AccountPageState extends State<AccountPage> {
+  late Stream<DatabaseEvent> _userStream;
+  final LogoutSession _logoutSession = LogoutSession();
+
+  @override
+  void initState() {
+    super.initState();
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _userStream =
+          FirebaseDatabase.instance.ref().child('users/${user.uid}').onValue;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,30 +90,32 @@ class AccountPage extends StatelessWidget {
           child: ListView(
             children: [
               // user card
-              BigUserCard(
-                backgroundColor: Colors.orange,
-                userName: "Sun Mei",
-                userMoreInfo: const Text(
-                  "sunmei_987@gmail.com",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontFamily: "ThaiFont",
-                  ),
-                ),
-                userProfilePic: const AssetImage("assets/profilpic.jpg"),
-                cardActionWidget: SettingsItem(
-                  icons: Icons.nordic_walking_rounded,
-                  title: 'The Adventure',
-                ),
-              ),
+              StreamBuilder<DatabaseEvent>(
+                  stream: _userStream,
+                  builder: (context, snapshot) {
+                    return BigUserCard(
+                      backgroundColor: Colors.orange,
+                      userName: "Sun Mei",
+                      userMoreInfo: const Text(
+                        "sunmei_987@gmail.com",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontFamily: "ThaiFont",
+                        ),
+                      ),
+                      userProfilePic: const AssetImage("assets/profilpic.jpg"),
+                      cardActionWidget: SettingsItem(
+                        icons: Icons.nordic_walking_rounded,
+                        title: 'The Adventure',
+                      ),
+                    );
+                  }),
               SettingsGroup(
                 items: [
                   SettingsItem(
                     onTap: () {
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const AppearancePage()));
+                          context, SlideRoute(page: AppearancePage()));
                     },
                     icons: CupertinoIcons.pencil_outline,
                     iconStyle: IconStyle(
@@ -111,10 +134,7 @@ class AccountPage extends StatelessWidget {
                   ),
                   SettingsItem(
                     onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const PrivacyPage()));
+                      Navigator.push(context, SlideRoute(page: PrivacyPage()));
                     },
                     icons: Icons.fingerprint,
                     iconStyle: IconStyle(
@@ -181,7 +201,8 @@ class AccountPage extends StatelessWidget {
                 settingsGroupTitle: AppLocalizations.of(context)!.account,
                 items: [
                   SettingsItem(
-                    onTap: () => _showSignOutConfirmationDialog(context),
+                    onTap: () =>
+                        _logoutSession.showSignOutConfirmationDialog(context),
                     icons: Icons.exit_to_app_rounded,
                     title: AppLocalizations.of(context)!.signOut,
                     titleStyle: TextStyle(
@@ -207,36 +228,6 @@ class AccountPage extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  void _showSignOutConfirmationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirm Sign Out'),
-          content: const Text('Are you sure you want to sign out?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Sign Out'),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                Navigator.pushReplacement(
-                  context,
-                  SlideRoute(page: const LoginSignUpPage()),
-                );
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }

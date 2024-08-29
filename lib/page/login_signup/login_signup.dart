@@ -1,16 +1,60 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thaijourney/constant/constant.dart';
 import 'package:thaijourney/constant/themeprovider.dart';
-import 'package:thaijourney/page/login_signup/forgot_password/1_email_verify.dart';
+import 'package:thaijourney/page/login_signup/forgot_password/email_verify.dart';
 import 'package:thaijourney/util/transition_route.dart';
 import 'register_page.dart';
 import '../home/home.dart';
 
-class LoginSignUpPage extends StatelessWidget {
+class LoginSignUpPage extends StatefulWidget {
   const LoginSignUpPage({super.key});
+
+  @override
+  State<LoginSignUpPage> createState() => _LoginSignUpPageState();
+}
+
+class _LoginSignUpPageState extends State<LoginSignUpPage> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isPasswordVisible = false;
+
+  Future<void> _loginUser(
+      String email, String password, BuildContext context) async {
+    try {
+      // Firebase Authentication method to sign in with email and password
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      // Navigate to home page on successful login
+      Navigator.pushReplacement(
+        context,
+        SlideRoute(page: const MyHome()),
+      );
+    } on FirebaseAuthException catch (e) {
+      // Handle Firebase Authentication errors
+      if (e.code == 'user-not-found') {
+        _showErrorMessage(context, 'No user found for that email.');
+      } else if (e.code == 'wrong-password') {
+        _showErrorMessage(context, 'Wrong password provided.');
+      } else {
+        _showErrorMessage(context, 'Login failed: ${e.message}');
+      }
+    } catch (e) {
+      // Handle other errors
+      _showErrorMessage(context, 'Login failed: $e');
+    }
+  }
+
+  void _showErrorMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +84,12 @@ class LoginSignUpPage extends StatelessWidget {
               children: [
                 Image.asset('assets/login_page.png'),
                 SizedBox(height: SizeConfig.height(2)),
+                // Email
                 TextFormField(
+                  controller: _passwordController,
+                  onTapOutside: (PointerDownEvent event) {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
                   style: TextStyle(
                       color: isDarkMode ? Colors.white : Colors.black),
                   decoration: InputDecoration(
@@ -55,12 +104,26 @@ class LoginSignUpPage extends StatelessWidget {
                     prefixIcon: const Icon(Icons.person_outlined),
                     prefixIconColor: isDarkMode ? Colors.white : Colors.black,
                   ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email';
+                    } else if (!RegExp(r"^[^@]+@[^@]+\.[^@]+")
+                        .hasMatch(value)) {
+                      return 'Please enter a valid email address';
+                    }
+                    return null;
+                  },
                 ),
                 SizedBox(height: SizeConfig.height(2)),
+                // Password
                 TextFormField(
+                  controller: _passwordController, // Add this line
+                  onTapOutside: (PointerDownEvent event) {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
                   style: TextStyle(
                       color: isDarkMode ? Colors.white : Colors.black),
-                  obscureText: true,
+                  obscureText: !_isPasswordVisible,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.password,
                     labelStyle: TextStyle(
@@ -72,9 +135,30 @@ class LoginSignUpPage extends StatelessWidget {
                     ),
                     prefixIcon: const Icon(Icons.lock_outline),
                     prefixIconColor: isDarkMode ? Colors.white : Colors.black,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: isDarkMode
+                            ? Colors.grey
+                            : Colors.black.withOpacity(0.6),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      },
+                    ),
                     focusColor: Colors.orange,
                     fillColor: isDarkMode ? Colors.white : Colors.black,
                   ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your password';
+                    }
+                    return null;
+                  },
                 ),
                 SizedBox(height: SizeConfig.height(1)),
                 Align(
@@ -110,11 +194,16 @@ class LoginSignUpPage extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        SlideRoute(page: const MyHome()),
-                      );
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        final email =
+                            _emailController.text.trim(); // Retrieve email
+                        final password = _passwordController.text
+                            .trim(); // Retrieve password
+
+                        await _loginUser(email, password,
+                            context); // Use email and password for login
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,

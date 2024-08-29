@@ -12,7 +12,7 @@ class EventPage extends StatefulWidget {
   const EventPage({super.key});
 
   @override
-  _EventPageState createState() => _EventPageState();
+  State<EventPage> createState() => _EventPageState();
 }
 
 class _EventPageState extends State<EventPage> {

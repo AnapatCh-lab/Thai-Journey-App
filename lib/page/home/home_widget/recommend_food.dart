@@ -4,21 +4,23 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import '../../../constant/constant.dart'; // Adjust the import path as needed
+import 'package:expandable_text/expandable_text.dart';
+import '../../../constant/constant.dart';
 
 class FoodSlide extends StatefulWidget {
   const FoodSlide({super.key});
 
   @override
-  _PlaceSlideState createState() => _PlaceSlideState();
+  State<FoodSlide> createState() => _FoodSlideState();
 }
 
-class _PlaceSlideState extends State<FoodSlide> {
+class _FoodSlideState extends State<FoodSlide> {
   Stream? slides;
 
-  Stream? _queryPlace() {
+  Stream? _queryFood() {
     slides = FirebaseFirestore.instance
         .collection('foods')
+        .limit(4)
         .snapshots()
         .map((list) => list.docs.map((doc) => doc.data()));
     return null;
@@ -28,7 +30,7 @@ class _PlaceSlideState extends State<FoodSlide> {
 
   @override
   void initState() {
-    _queryPlace();
+    _queryFood();
     super.initState();
   }
 
@@ -38,7 +40,7 @@ class _PlaceSlideState extends State<FoodSlide> {
     return Scaffold(
         appBar: AppBar(
           title: Text(
-            AppLocalizations.of(context)!.rec_place,
+            AppLocalizations.of(context)!.rec_food,
             style: TextStyle(
               fontSize: SizeConfig.height(2.5),
               fontWeight: FontWeight.w600,
@@ -53,7 +55,7 @@ class _PlaceSlideState extends State<FoodSlide> {
               if (snap.hasError) {
                 return Center(child: Text("Error: ${snap.error}"));
               } else if (snap.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator();
+                return Center(child: CircularProgressIndicator());
               } else {
                 final slideList = snap.data.toList();
                 return CarouselSlider.builder(
@@ -80,61 +82,151 @@ class _PlaceSlideState extends State<FoodSlide> {
 
 buildCarouselItem(Map data, BuildContext context) {
   final locale = Localizations.localeOf(context);
-  return Container(
-    margin: EdgeInsets.all(SizeConfig.height(1)),
-    decoration: const BoxDecoration(
-      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-    ),
-    child: ClipRRect(
-      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-      child: Stack(
-        children: <Widget>[
-          Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
-            child: Container(
-              color: Colors.grey[300],
+  return GestureDetector(
+    onTap: () {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) {
+          return DraggableScrollableSheet(
+            initialChildSize: 0.5,
+            minChildSize: 0.25,
+            maxChildSize: 0.85,
+            expand: false,
+            builder: (context, scrollController) {
+              return SingleChildScrollView(
+                controller: scrollController,
+                child: Padding(
+                  padding: EdgeInsets.all(SizeConfig.height(2)),
+                  child: Column(
+                    children: [
+                      ClipRRect(
+                        borderRadius:
+                        BorderRadius.circular(SizeConfig.height(2)),
+                        child: FastCachedImage(
+                          url: data['imageUrl'],
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: SizeConfig.height(20),
+                          errorBuilder: (context, error, stackTrace) =>
+                              Center(child: Icon(Icons.error)),
+                        ),
+                      ),
+                      SizedBox(height: SizeConfig.height(1)),
+                      Text(
+                        locale.languageCode == 'th'
+                            ? data['name_th']
+                            : data['name'],
+                        style: TextStyle(
+                          fontSize: SizeConfig.height(2.5),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: SizeConfig.height(1)),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              width: 2.0,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: SizeConfig.height(2)),
+                      ExpandableText(
+                        locale.languageCode == 'th'
+                            ? data['description_th']
+                            : data['description'],
+                        expandText: 'See More',
+                        collapseText: 'Show Less',
+                        maxLines: 4,
+                        linkColor: Colors.blue,
+                        onExpandedChanged: (isExpanded) {
+                          if (isExpanded) {
+                            scrollController.animateTo(
+                              scrollController.position.maxScrollExtent,
+                              duration: Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          } else {
+                            scrollController.animateTo(
+                              0,
+                              duration: Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          }
+                        },
+                        style: TextStyle(
+                          fontSize: SizeConfig.height(2),
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      );
+    },
+    child: Container(
+      margin: EdgeInsets.all(SizeConfig.height(1)),
+      decoration: const BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+      ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+        child: Stack(
+          children: <Widget>[
+            Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Container(
+                color: Colors.grey[300],
+                width: double.infinity,
+                height: double.infinity,
+              ),
+            ),
+            FastCachedImage(
+              url: data['imageUrl'],
+              fit: BoxFit.cover,
               width: double.infinity,
-              height: double.infinity,
+              fadeInDuration: Duration(milliseconds: 300),
+              errorBuilder: (context, error, stackTrace) =>
+                  Center(child: Icon(Icons.error)),
             ),
-          ),
-          FastCachedImage(
-            url: data['url'],
-            fit: BoxFit.cover,
-            width: double.infinity,
-            fadeInDuration: Duration(milliseconds: 300),
-            errorBuilder: (context, error, stackTrace) =>
-                Center(child: Icon(Icons.error)),
-          ),
-          Positioned(
-            bottom: 0.0,
-            left: 0.0,
-            right: 0.0,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color.fromARGB(200, 0, 0, 0),
-                    Color.fromARGB(0, 0, 0, 0)
-                  ],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
+            Positioned(
+              bottom: 0.0,
+              left: 0.0,
+              right: 0.0,
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color.fromARGB(200, 0, 0, 0),
+                      Color.fromARGB(0, 0, 0, 0)
+                    ],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  ),
                 ),
-              ),
-              padding: EdgeInsets.symmetric(
-                  vertical: SizeConfig.height(1.5),
-                  horizontal: SizeConfig.height(2)),
-              child: Text(
-                locale.languageCode == 'th' ? data['name_th'] : data['name'],
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: SizeConfig.height(1.9),
-                  fontWeight: FontWeight.bold,
+                padding: EdgeInsets.symmetric(
+                    vertical: SizeConfig.height(1.5),
+                    horizontal: SizeConfig.height(2)),
+                child: Text(
+                  locale.languageCode == 'th' ? data['name_th'] : data['name'],
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: SizeConfig.height(1.9),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     ),
   );

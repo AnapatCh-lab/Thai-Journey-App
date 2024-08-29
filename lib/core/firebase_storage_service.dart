@@ -9,7 +9,7 @@ class FirebaseStorageService {
       final String url = await ref.getDownloadURL();
       return url;
     } catch (e) {
-      print(e);
+      (e);
       return '';
     }
   }
@@ -24,7 +24,7 @@ class FirebaseStorageService {
       }
       return urls;
     } catch (e) {
-      print(e);
+      (e);
       return [];
     }
   }
